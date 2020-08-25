@@ -7,6 +7,7 @@ router.get('/', (req, res) => {
     console.log('===============');
     Post.findAll({
         attributes: ['id', 'post_url', 'title', 'created_at'],
+        order: [['created_at', 'DESC']],
         include: [ // this makes a JOIN 
             {
                 model: User,
@@ -89,6 +90,27 @@ router.put('/:id', (req, res) => {
             console.log(err);
             res.status(500).json(err);
         });
-})
+});
+
+// create delete/destroy route
+router.delete('/:id', (req, res) => {
+    Post.destroy({
+        where: {
+            id: req.params.id
+        }
+    })
+        .then(dbPostData => {
+            if (!dbPostData) {
+                res.status(404).json({ message: 'No post with this id' });
+                return;
+            }
+            res.json(dbPostData);
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json(err);
+        });
+
+});
 
 module.exports = router; // this exposes the changes/code to the express server. Keep this at the bottom of the file
