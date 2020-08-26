@@ -3,7 +3,7 @@ const routes = require('./routes');
 const sequelize = require('./config/connection');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3001; // makes app compatible with Heroku. Runs and env port live and 3001 locally
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
