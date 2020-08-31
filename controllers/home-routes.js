@@ -3,6 +3,12 @@ const router = require('express').Router();
 const sequelize = require('../config/connection');
 const { Post, User, Comment } = require('../models'); // importing modules and models
 
+// login route
+router.get('/login', (req, res) => {
+    res.render('login');
+});
+
+
 router.get('/', (req, res) => {
     Post.findAll({
         attributes: [
