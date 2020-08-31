@@ -22,10 +22,7 @@ const sess = {
     db: sequelize
   })
 };
-
-
 app.use(session(sess));
-
 // add in css stylesheet
 app.use(express.static(path.join(__dirname, 'public')));
 
