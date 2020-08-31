@@ -10,8 +10,6 @@ const PORT = process.env.PORT || 3001;
 const exphbs = require('express-handlebars');
 const hbs = exphbs.create({});
 
-
-
 // add in css stylesheet
 app.use(express.static(path.join(__dirname, 'public')));
 
