@@ -9,6 +9,22 @@ const PORT = process.env.PORT || 3001;
 // This sets up HANDLEBARS.js HTML template engine
 const exphbs = require('express-handlebars');
 const hbs = exphbs.create({});
+const session = require('express-session');
+
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
+
+const sess = {
+  secret: process.env.Secret,
+  cookie: {},
+  resave: false,
+  saveUninitialized: true,
+  store: new SequelizeStore({
+    db: sequelize
+  })
+};
+
+
+app.use(session(sess));
 
 // add in css stylesheet
 app.use(express.static(path.join(__dirname, 'public')));
