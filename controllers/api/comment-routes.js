@@ -1,5 +1,7 @@
 const router = require('express').Router();
 const { Comment } = require('../../models'); //destructored Comment Object
+const withAuth = require('../../utils/auth');
+
 
 
 // get route to find all comments
@@ -15,7 +17,7 @@ router.get('/', (req, res) => {
 });
 
 // create comment post route
-router.post('/', (req, res) => {
+router.post('/', withAuth, (req, res) => {
     // check the session
     if (req.session) {
         Comment.create({

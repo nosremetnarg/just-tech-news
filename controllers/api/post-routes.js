@@ -2,6 +2,8 @@ const router = require('express').Router();
 const { Post, User, Vote, Comment } = require('../../models'); // these create the express endpoints
 // we want to pull information from Post as well as User, and Vote
 const sequelize = require('../../config/connection');
+const withAuth = require('../../utils/auth');
+
 
 
 
@@ -81,13 +83,13 @@ router.get('/:id', (req, res) => {
 });
 
 // create a post route
-router.post('/', (req, res) => {
+router.post('/', withAuth, (req, res) => {
     // expects json info back
     Post.create({
 
         title: req.body.title,
         post_url: req.body.post_url,
-        user_id: req.body.user_id
+        user_id: req.session.user_id
 
     })
         .then(dbPostData => res.json(dbPostData)) // return the promise
@@ -99,7 +101,7 @@ router.post('/', (req, res) => {
 })
 
 // PUT /api/posts/upvote
-router.put('/upvote', (req, res) => {
+router.put('/upvote', withAuth,  (req, res) => {
     // make sure the session exists first
     if (req.session) {
         // pass session id along with all destructured properties on req.body
@@ -114,7 +116,7 @@ router.put('/upvote', (req, res) => {
 
 
 //create put route
-router.put('/:id', (req, res) => {
+router.put('/:id', withAuth, (req, res) => {
     Post.update(
         {
             title: req.body.title // finding the post with req.body.title and replace the title of the post
@@ -139,7 +141,7 @@ router.put('/:id', (req, res) => {
 });
 
 // create delete/destroy route
-router.delete('/:id', (req, res) => {
+router.delete('/:id', withAuth, (req, res) => {
     Post.destroy({
         where: {
             id: req.params.id

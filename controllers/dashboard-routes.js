@@ -1,69 +1,13 @@
 const router = require('express').Router();
-
 const sequelize = require('../config/connection');
-const { Post, User, Comment } = require('../models'); // importing modules and models
+const { Post, User, Comment } = require('../models');
 const withAuth = require('../utils/auth');
 
 
-// login route
-router.get('/login', (req, res) => {
-    if (req.session.loggedIn) {
-        res.redirect('/');
-        return;
-    }
-
-    res.render('login');
-});
-
-// get all posts
-router.get('/', (req, res) => {
-    console.log(req.session);
+router.get('/', withAuth, (req, res) => {
     Post.findAll({
-        attributes: [
-            'id',
-            'post_url',
-            'title',
-            'created_at',
-            [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
-        ],
-        include: [
-            {
-                model: Comment,
-                attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
-                include: {
-                    model: User,
-                    attributes: ['username']
-                }
-            },
-            {
-                model: User,
-                attributes: ['username']
-            }
-        ]
-    })
-        .then(dbPostData => {
-            // pass a single post object into the homepage template
-            console.log(dbPostData[0]);
-            const posts = dbPostData.map(post => post.get({ plain: true })); // loops over and maps each sequelize object into a serialized version of itself
-
-            res.render('homepage', {
-                posts,
-                loggedIn: req.session.loggedIn
-            });
-            // .handlebars extension is implied
-            // get returns simple information
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json(err);
-        }); // using render instead of send or sendfile
-});
-
-// get single post
-router.get('/post/:id', (req, res) => {
-    Post.findOne({
         where: {
-            id: req.params.id
+            user_id: req.session.user_id
         },
         attributes: [
             'id',
@@ -88,26 +32,54 @@ router.get('/post/:id', (req, res) => {
         ]
     })
         .then(dbPostData => {
-            if (!dbPostData) {
-                res.status(404).json({ message: 'No post found with this id' });
-                return;
-            }
-
-            // serialize the data. make it more simple to read
-            const post = dbPostData.get({ plain: true });
-
-            // pass data to template and create page and checks if user is logged in
-            res.render('single-post', {
-                post,
-                loggedIn: req.session.loggedIn
-            });
-
+            // serialize data before passing to template
+            const posts = dbPostData.map(post => post.get({ plain: true }));
+            res.render('dashboard', { posts, loggedIn: true });
         })
         .catch(err => {
             console.log(err);
             res.status(500).json(err);
         });
 });
+// this renders the handlebars file
+// loggedIn set to true....only users that are logged in can get to this route
+
+router.get('/edit/:id', withAuth, (req, res) => {
+    Post.findOne({
+        where: {
+            user_id: req.session.user_id
+        },
+        attributes: [
+            'id',
+            'post_url',
+            'title',
+            'created_at',
+            [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
+        ],
+        include: [
+            {
+                model: Comment,
+                attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
+                include: {
+                    model: User,
+                    attributes: ['username']
+                }
+            },
+            {
+                model: User,
+                attributes: ['username']
+            }
+        ]
+    })
+        .then(dbPostData => {
+            // serialize data before passing to template
+            const post = dbPostData.get({ plain: true });
+            res.render('edit-post', { post, loggedIn: true });
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json(err);
+        });
+})
 
 module.exports = router;
-
